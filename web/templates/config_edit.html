@@ -1,0 +1,25 @@
+{{define "config_edit"}}
+{{template "header" .}}
+<section class="panel">
+  <div class="panel-header">
+    <div>
+      <p class="eyebrow">Editing config</p>
+      <h2>{{.CurrentFile}}</h2>
+    </div>
+    <a class="button-link secondary" href="/configs">Back to list</a>
+  </div>
+
+  <form method="post" action="/configs/{{.CurrentFile}}/save" data-editor-form>
+    <input type="hidden" name="redirect" value="/configs/{{.CurrentFile}}">
+    <textarea name="content" class="editor" spellcheck="false" wrap="off">{{.Content}}</textarea>
+    <div class="editor-actions">
+      <button type="submit" data-save-button disabled>Save</button>
+      <button type="button" class="secondary" data-format-json>Format JSON</button>
+      <a class="button-link secondary" href="/configs/merged">Merged preview</a>
+      <button type="submit" class="secondary" formaction="/configs/validate" formmethod="post">Validate all</button>
+    </div>
+    <p class="editor-hint" data-editor-message hidden></p>
+  </form>
+</section>
+{{template "footer" .}}
+{{end}}

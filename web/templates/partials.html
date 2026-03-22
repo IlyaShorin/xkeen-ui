@@ -1,0 +1,43 @@
+{{define "event_panel"}}
+{{if .LastEvent}}
+<section class="event {{if .LastEvent.Success}}event-ok{{else}}event-error{{end}}">
+  <div class="event-header">
+    <strong>{{.LastEvent.Title}}</strong>
+    <span>{{.LastEvent.At}}</span>
+  </div>
+  <p>{{.LastEvent.Summary}}</p>
+  {{if .LastEvent.Output}}
+  <pre>{{.LastEvent.Output}}</pre>
+  {{end}}
+</section>
+{{end}}
+{{end}}
+
+{{define "status_panel"}}
+<section
+  class="hero"
+  id="status-panel"
+  hx-get="/fragments/status"
+  hx-trigger="load, every 10s, status-refresh from:body"
+  hx-push-url="false"
+  hx-swap="outerHTML">
+  <div>
+    <p class="eyebrow">Runtime status</p>
+    {{if .Status}}
+    <h2>{{if .StatusRunning}}Xray is running{{else}}Xray is stopped{{end}}</h2>
+    <p>{{.Status.Command}}</p>
+    {{else}}
+    <h2>Loading xray status...</h2>
+    <p>Fetching current status from the router.</p>
+    {{end}}
+  </div>
+  <button
+    type="button"
+    class="secondary"
+    hx-get="/fragments/status"
+    hx-target="#status-panel"
+    hx-swap="outerHTML">
+    Refresh status
+  </button>
+</section>
+{{end}}

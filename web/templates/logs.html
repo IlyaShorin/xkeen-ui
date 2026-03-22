@@ -1,0 +1,18 @@
+{{define "logs"}}
+{{template "header" .}}
+<section class="panel">
+  <div class="panel-header">
+    <div>
+      <p class="eyebrow">Tail output</p>
+      <h2>{{.CurrentLogKind}}</h2>
+    </div>
+  </div>
+  <div class="log-tabs">
+    {{range .LogKinds}}
+    <a class="{{if eq $.CurrentLogKind .}}is-active{{end}}" href="/logs/{{.}}">{{.}}</a>
+    {{end}}
+  </div>
+  <pre class="log-output">{{.LogContent}}</pre>
+</section>
+{{template "footer" .}}
+{{end}}

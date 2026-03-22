@@ -1,0 +1,30 @@
+{{define "configs"}}
+{{template "header" .}}
+<section class="panel">
+  <div class="panel-header">
+    <div>
+      <p class="eyebrow">Managed directory</p>
+      <h2>{{.ConfigDir}}</h2>
+    </div>
+    <div class="panel-actions">
+      <form method="post" action="/configs/validate" class="inline-form">
+        <input type="hidden" name="redirect" value="/configs">
+        <button type="submit">Validate</button>
+      </form>
+      <a class="button-link secondary" href="/configs/merged">Merged preview</a>
+    </div>
+  </div>
+  <div class="file-grid">
+    {{range .ConfigFiles}}
+    <a class="file-card" href="/configs/{{.Name}}">
+      <strong>{{.Name}}</strong>
+      <span>{{.SizeLabel}}</span>
+      <span>{{.ModTimeLabel}}</span>
+    </a>
+    {{else}}
+    <p>No JSON files found.</p>
+    {{end}}
+  </div>
+</section>
+{{template "footer" .}}
+{{end}}

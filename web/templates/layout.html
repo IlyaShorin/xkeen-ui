@@ -1,0 +1,53 @@
+{{define "header"}}
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{{.Title}} | xkeen-ui</title>
+  <link rel="stylesheet" href="/static/style.css?v={{.AssetVersion}}">
+  <script src="/static/htmx.min.js?v={{.AssetVersion}}"></script>
+  <script defer src="/static/app.js?v={{.AssetVersion}}"></script>
+</head>
+<body>
+  <div class="shell">
+    <header class="topbar">
+      <div>
+        <p class="eyebrow">Keenetic companion</p>
+        <h1>xkeen-ui</h1>
+      </div>
+      <div class="topbar-actions">
+        <nav class="nav">
+          <a class="{{if eq .Active "dashboard"}}is-active{{end}}" href="/">Dashboard</a>
+          <a class="{{if eq .Active "configs"}}is-active{{end}}" href="/configs">Configs</a>
+          <a class="{{if eq .Active "logs"}}is-active{{end}}" href="/logs">Logs</a>
+          <a class="{{if eq .Active "merged"}}is-active{{end}}" href="/configs/merged">Merged</a>
+        </nav>
+        <form method="post" action="/logout" class="session-pill">
+          <span class="session-user">{{.CurrentUser}}</span>
+          <button type="submit" class="secondary session-logout">Logout</button>
+        </form>
+      </div>
+    </header>
+
+    {{if .Notice}}
+    <section class="banner banner-ok">{{.Notice}}</section>
+    {{end}}
+
+    {{if .Error}}
+    <section class="banner banner-error">{{.Error}}</section>
+    {{end}}
+
+    <div id="event-panel">
+      {{template "event_panel" .}}
+    </div>
+
+    <main class="content" id="page-content">
+{{end}}
+
+{{define "footer"}}
+    </main>
+  </div>
+</body>
+</html>
+{{end}}

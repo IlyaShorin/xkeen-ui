@@ -1,0 +1,85 @@
+#!/bin/sh
+
+NAME="xkeen-ui"
+BIN="/opt/sbin/xkeen-ui"
+CONFIG="/opt/etc/xkeen-ui/config.yaml"
+PIDFILE="/opt/var/run/xkeen-ui.pid"
+LOGDIR="/opt/var/log/xkeen-ui"
+LOGFILE="$LOGDIR/service.log"
+
+is_running() {
+    [ -f "$PIDFILE" ] || return 1
+    PID="$(cat "$PIDFILE" 2>/dev/null)"
+    [ -n "$PID" ] || return 1
+    kill -0 "$PID" 2>/dev/null
+}
+
+start() {
+    [ -x "$BIN" ] || {
+        echo "$NAME binary not found: $BIN"
+        return 1
+    }
+
+    [ -f "$CONFIG" ] || {
+        echo "$NAME config not found: $CONFIG"
+        return 1
+    }
+
+    if is_running; then
+        echo "$NAME is already running"
+        return 0
+    fi
+
+    mkdir -p "$LOGDIR" "$(dirname "$PIDFILE")"
+    nohup "$BIN" serve -config "$CONFIG" >>"$LOGFILE" 2>&1 &
+    echo $! > "$PIDFILE"
+    echo "$NAME started"
+}
+
+stop() {
+    if ! is_running; then
+        echo "$NAME is not running"
+        rm -f "$PIDFILE"
+        return 1
+    fi
+
+    PID="$(cat "$PIDFILE" 2>/dev/null)"
+    kill "$PID" 2>/dev/null
+    rm -f "$PIDFILE"
+    echo "$NAME stopped"
+}
+
+status() {
+    if is_running; then
+        echo "$NAME is running"
+        return 0
+    fi
+
+    echo "$NAME is stopped"
+    return 1
+}
+
+restart() {
+    stop >/dev/null 2>&1
+    sleep 1
+    start
+}
+
+case "$1" in
+    start)
+        start
+        ;;
+    stop)
+        stop
+        ;;
+    restart)
+        restart
+        ;;
+    status)
+        status
+        ;;
+    *)
+        echo "Usage: $0 {start|stop|restart|status}"
+        exit 1
+        ;;
+esac

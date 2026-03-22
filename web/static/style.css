@@ -1,0 +1,375 @@
+:root {
+  --bg: #f4efe6;
+  --bg-strong: #efe1c4;
+  --panel: rgba(255, 252, 246, 0.94);
+  --ink: #1f2430;
+  --muted: #6a6d75;
+  --accent: #b04a1f;
+  --accent-strong: #7f2f0d;
+  --success: #1f7a4d;
+  --error: #8d1f30;
+  --border: rgba(31, 36, 48, 0.12);
+  --shadow: 0 24px 60px rgba(48, 30, 10, 0.12);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  color: var(--ink);
+  background:
+    radial-gradient(circle at top left, rgba(255, 214, 163, 0.45), transparent 35%),
+    linear-gradient(180deg, #f9f4ed 0%, #f1e8db 100%);
+  font-family: "IBM Plex Sans", "Segoe UI", sans-serif;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+button,
+.button-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 42px;
+  padding: 0 16px;
+  border: 0;
+  border-radius: 12px;
+  background: var(--accent);
+  color: #fff;
+  font: inherit;
+  cursor: pointer;
+  transition: transform 0.16s ease, background 0.16s ease;
+}
+
+button:hover,
+.button-link:hover {
+  background: var(--accent-strong);
+  transform: translateY(-1px);
+}
+
+button.secondary,
+.button-link.secondary {
+  background: rgba(31, 36, 48, 0.08);
+  color: var(--ink);
+}
+
+button:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+  transform: none;
+}
+
+.shell {
+  width: min(1180px, calc(100vw - 32px));
+  margin: 0 auto;
+  padding: 24px 0 40px;
+}
+
+.topbar,
+.panel,
+.event,
+.hero,
+.banner {
+  backdrop-filter: blur(16px);
+  background: var(--panel);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow);
+}
+
+.topbar,
+.panel,
+.event,
+.hero,
+.content,
+.content > *,
+.panel > * {
+  min-width: 0;
+}
+
+.topbar {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: 20px;
+  padding: 22px 24px;
+  border-radius: 24px;
+}
+
+.topbar-actions {
+  display: flex;
+  align-items: center;
+  justify-content: end;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+
+.topbar h1,
+.hero h2,
+.panel h2,
+.panel h3 {
+  margin: 0;
+  font-family: "IBM Plex Mono", "SFMono-Regular", monospace;
+}
+
+.nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.session-user {
+  display: inline-flex;
+  align-items: center;
+  min-height: 42px;
+  padding: 0 16px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.68);
+  color: var(--ink);
+  font-family: "IBM Plex Mono", "SFMono-Regular", monospace;
+}
+
+.session-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px;
+  border-radius: 999px;
+  background: rgba(31, 36, 48, 0.05);
+}
+
+.session-logout {
+  min-width: 110px;
+}
+
+.nav a,
+.log-tabs a {
+  padding: 10px 14px;
+  border-radius: 999px;
+  background: rgba(31, 36, 48, 0.05);
+}
+
+.nav a.is-active,
+.log-tabs a.is-active {
+  background: var(--ink);
+  color: #fff;
+}
+
+.content {
+  display: grid;
+  gap: 18px;
+  margin-top: 18px;
+}
+
+.hero {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  padding: 24px;
+  border-radius: 24px;
+}
+
+.panel {
+  padding: 20px;
+  border-radius: 20px;
+}
+
+.panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 18px;
+}
+
+.panel-actions,
+.inline-form {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.editor-actions {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 10px;
+  margin-top: 12px;
+}
+
+.editor-actions > * {
+  width: 100%;
+}
+
+.action-grid,
+.file-grid {
+  display: grid;
+  gap: 14px;
+}
+
+.action-grid {
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+}
+
+.action-grid form,
+.file-card {
+  display: grid;
+  gap: 10px;
+  padding: 18px;
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.55);
+  border: 1px solid var(--border);
+}
+
+.action-grid p,
+.file-card span,
+.eyebrow {
+  margin: 0;
+  color: var(--muted);
+}
+
+.file-grid {
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+}
+
+.editor,
+.log-output,
+.event pre {
+  display: block;
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  border: 1px solid rgba(31, 36, 48, 0.14);
+  border-radius: 18px;
+  background: #1b1f27;
+  color: #eef2f7;
+  font: 14px/1.55 "IBM Plex Mono", "SFMono-Regular", monospace;
+  overflow-x: auto;
+  overflow-y: auto;
+}
+
+.editor {
+  min-height: 60vh;
+  padding: 18px;
+  resize: vertical;
+  white-space: pre;
+  overflow: auto;
+  tab-size: 2;
+}
+
+.editor-hint {
+  min-height: 22px;
+  margin: 10px 4px 0;
+  color: var(--muted);
+}
+
+.editor-hint.is-error {
+  color: var(--error);
+}
+
+.editor-hint.is-success {
+  color: var(--success);
+}
+
+.log-output,
+.event pre {
+  margin: 0;
+  padding: 18px;
+  white-space: pre;
+}
+
+.banner,
+.event {
+  padding: 16px 18px;
+  border-radius: 18px;
+}
+
+.banner-ok,
+.event-ok {
+  border-color: rgba(31, 122, 77, 0.25);
+}
+
+.banner-error,
+.event-error {
+  border-color: rgba(141, 31, 48, 0.28);
+}
+
+.event-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.log-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 18px;
+}
+
+.login-shell {
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+  padding: 20px;
+}
+
+.login-card {
+  width: min(420px, 100%);
+  padding: 28px;
+  border-radius: 24px;
+  backdrop-filter: blur(16px);
+  background: var(--panel);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow);
+}
+
+.login-copy {
+  color: var(--muted);
+}
+
+.login-form {
+  display: grid;
+  gap: 14px;
+}
+
+.login-form label {
+  display: grid;
+  gap: 8px;
+}
+
+.login-form input {
+  min-height: 44px;
+  border-radius: 12px;
+  border: 1px solid rgba(31, 36, 48, 0.14);
+  padding: 0 12px;
+  font: inherit;
+}
+
+@media (max-width: 720px) {
+  .shell {
+    width: min(100vw - 20px, 100%);
+    padding-top: 14px;
+  }
+
+  .topbar,
+  .hero,
+  .panel-header {
+    align-items: start;
+    flex-direction: column;
+  }
+
+  .editor {
+    min-height: 50vh;
+  }
+
+  .editor-actions {
+    grid-template-columns: 1fr 1fr;
+  }
+}

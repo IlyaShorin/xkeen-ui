@@ -1,0 +1,26 @@
+{{define "dashboard"}}
+{{template "header" .}}
+{{template "status_panel" .}}
+
+{{range .ActionGroups}}
+<section class="panel">
+  <div class="panel-header">
+    <h3>{{.Name}}</h3>
+  </div>
+  <div class="action-grid">
+    {{range .Actions}}
+    <form
+      method="post"
+      action="/actions/{{.Name}}"
+      hx-post="/actions/{{.Name}}"
+      hx-target="#event-panel"
+      hx-swap="innerHTML">
+      <button type="submit">{{.Title}}</button>
+      <p>{{.Description}}</p>
+    </form>
+    {{end}}
+  </div>
+</section>
+{{end}}
+{{template "footer" .}}
+{{end}}

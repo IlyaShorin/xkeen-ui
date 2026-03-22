@@ -1,0 +1,14 @@
+{{define "merged"}}
+{{template "header" .}}
+<section class="panel">
+  <div class="panel-header">
+    <div>
+      <p class="eyebrow">Read-only preview</p>
+      <h2>Merged xray config</h2>
+    </div>
+    <a class="button-link secondary" href="/configs">Back to configs</a>
+  </div>
+  <pre class="log-output">{{.MergedConfig}}</pre>
+</section>
+{{template "footer" .}}
+{{end}}

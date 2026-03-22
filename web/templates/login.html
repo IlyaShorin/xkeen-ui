@@ -1,0 +1,35 @@
+{{define "login"}}
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Login | xkeen-ui</title>
+  <link rel="stylesheet" href="/static/style.css?v={{.AssetVersion}}">
+</head>
+<body>
+  <div class="login-shell">
+    <section class="login-card">
+      <p class="eyebrow">LAN access</p>
+      <h1>xkeen-ui</h1>
+      <p class="login-copy">Sign in to manage `xkeen` and `xray` on the router.</p>
+      {{if .LoginError}}
+      <section class="banner banner-error">{{.LoginError}}</section>
+      {{end}}
+      <form method="post" action="/login" class="login-form">
+        <input type="hidden" name="next" value="/">
+        <label>
+          <span>Username</span>
+          <input type="text" name="username" autocomplete="username" value="{{.LoginUsername}}">
+        </label>
+        <label>
+          <span>Password</span>
+          <input type="password" name="password" autocomplete="current-password">
+        </label>
+        <button type="submit">Sign in</button>
+      </form>
+    </section>
+  </div>
+</body>
+</html>
+{{end}}

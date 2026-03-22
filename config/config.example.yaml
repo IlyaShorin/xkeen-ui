@@ -1,0 +1,17 @@
+listen: 0.0.0.0:9081
+username: admin
+password_hash: sha256$120000$replace$replace
+allow_cidrs:
+  - 127.0.0.1/32
+  - 192.168.0.0/16
+  - 10.0.0.0/8
+  - 172.16.0.0/12
+xkeen_bin: /opt/sbin/xkeen
+xray_bin: /opt/sbin/xray
+xray_service: /opt/etc/init.d/S24xray
+xray_config_dir: /opt/etc/xray/configs
+backup_dir: /opt/backups/xkeen-ui
+log_files:
+  xkeen_ui_service: /opt/var/log/xkeen-ui/service.log
+  xray_access: /opt/var/log/xray/access.log
+  xray_error: /opt/var/log/xray/error.log
