@@ -2,24 +2,24 @@
 
 set -euo pipefail
 
-script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-repo_dir="$(cd "$script_dir/.." && pwd)"
-
 default_host="192.168.1.1"
 default_user="root"
-default_config="$repo_dir/config/config.example.yaml"
 default_repo_slug="IlyaShorin/xkeen-ui"
 default_release_ref="latest"
+panel_port="9081"
 remote_binary="/opt/sbin/xkeen-ui"
 remote_config="/opt/etc/xkeen-ui/config.yaml"
 remote_init="/opt/etc/init.d/S26xkeen-ui"
 restart_service="1"
-overwrite_config=""
+overwrite_config="0"
 host=""
 user=""
 local_config=""
 repo_slug="$default_repo_slug"
 release_ref="$default_release_ref"
+generated_config_path=""
+panel_username=""
+panel_password=""
 
 usage() {
   cat <<EOF
@@ -78,22 +78,60 @@ prompt_yes_no() {
   esac
 }
 
-require_local_config() {
-  if [ -z "$local_config" ]; then
-    local_config="$(prompt_with_default "Local config path" "$default_config")"
-  fi
+prompt_secret() {
+  local label="$1"
+  local value=""
+  local confirm=""
 
-  if [ ! -f "$local_config" ]; then
-    echo "Config file not found: $local_config" >&2
-    exit 1
-  fi
+  while true; do
+    read -r -s -p "$label: " value
+    echo
 
-  if grep -q 'sha256\$120000\$replace\$replace' "$local_config"; then
-    echo "Config file still contains the example password hash." >&2
-    continue_with_example="$(prompt_yes_no "Continue with the example config anyway?" "n")"
-    if [ "$continue_with_example" != "1" ]; then
-      exit 1
+    if [ -z "$value" ]; then
+      echo "Value must not be empty." >&2
+      continue
     fi
+
+    read -r -s -p "Repeat $label: " confirm
+    echo
+
+    if [ "$value" != "$confirm" ]; then
+      echo "Values do not match. Try again." >&2
+      continue
+    fi
+
+    printf '%s' "$value"
+    return 0
+  done
+}
+
+hash_password() {
+  local password="$1"
+
+  if command -v python3 >/dev/null 2>&1; then
+    python3 - "$password" <<'PY'
+import hashlib
+import secrets
+import sys
+
+password = sys.argv[1].encode()
+iterations = 120000
+salt = secrets.token_bytes(16)
+digest = hashlib.sha256(salt + password).digest()
+for _ in range(1, iterations):
+    digest = hashlib.sha256(digest + salt + password).digest()
+print(f"sha256${iterations}${salt.hex()}${digest.hex()}")
+PY
+    return 0
+  fi
+
+  echo "python3 is required to generate a panel password hash" >&2
+  exit 1
+}
+
+cleanup_generated_config() {
+  if [ -n "$generated_config_path" ] && [ -f "$generated_config_path" ]; then
+    rm -f "$generated_config_path"
   fi
 }
 
@@ -109,6 +147,79 @@ bundle_url_for() {
   fi
 
   printf 'https://github.com/%s/releases/download/%s/%s' "$repo" "$ref" "$asset_name"
+}
+
+resolve_config_source() {
+  if [ -n "$local_config" ]; then
+    if [ ! -f "$local_config" ]; then
+      echo "Config file not found: $local_config" >&2
+      exit 1
+    fi
+    return 0
+  fi
+
+  panel_username="$(prompt_with_default "Panel username" "$user")"
+  panel_password="$(prompt_secret "Panel password")"
+  generated_config_path="$(mktemp "${TMPDIR:-/tmp}/xkeen-ui-config.XXXXXX.yaml")"
+
+  local password_hash
+  password_hash="$(hash_password "$panel_password")"
+
+  cat > "$generated_config_path" <<EOF
+listen: 0.0.0.0:${panel_port}
+username: ${panel_username}
+password_hash: ${password_hash}
+allow_cidrs:
+  - 127.0.0.1/32
+  - 192.168.0.0/16
+  - 10.0.0.0/8
+  - 172.16.0.0/12
+xkeen_bin: /opt/sbin/xkeen
+xray_bin: /opt/sbin/xray
+xray_service: /opt/etc/init.d/S24xray
+xray_config_dir: /opt/etc/xray/configs
+backup_dir: /opt/backups/xkeen-ui
+log_files:
+  xkeen_ui_service: /opt/var/log/xkeen-ui/service.log
+  xray_access: /opt/var/log/xray/access.log
+  xray_error: /opt/var/log/xray/error.log
+EOF
+
+  local_config="$generated_config_path"
+}
+
+print_completion() {
+  local panel_url="$1"
+  local panel_username="$2"
+  local panel_password="$3"
+  local config_mode="$4"
+
+  echo
+  echo "Personal cabinet:"
+  echo "  $panel_url"
+  echo
+
+  case "$config_mode" in
+    generated)
+      echo "Panel login: $panel_username"
+      echo "Panel password: $panel_password"
+      echo
+      ;;
+    uploaded)
+      echo "Panel credentials come from: $local_config"
+      echo
+      ;;
+    *)
+      echo "Use the existing panel credentials from $remote_config"
+      echo
+      ;;
+  esac
+
+  if command -v open >/dev/null 2>&1; then
+    open "$panel_url" >/dev/null 2>&1 || true
+  elif command -v xdg-open >/dev/null 2>&1; then
+    xdg-open "$panel_url" >/dev/null 2>&1 || true
+  fi
 }
 
 while [ "$#" -gt 0 ]; do
@@ -167,11 +278,15 @@ ssh_options=(
   -o ControlMaster=auto
   -o ControlPersist=10m
   -o ControlPath="$control_path"
+  -o PreferredAuthentications=password
+  -o PubkeyAuthentication=no
+  -o KbdInteractiveAuthentication=no
   -o StrictHostKeyChecking=accept-new
 )
 
 cleanup() {
   ssh "${ssh_options[@]}" -O exit "$ssh_target" >/dev/null 2>&1 || true
+  cleanup_generated_config
 }
 
 trap cleanup EXIT
@@ -223,23 +338,25 @@ if [ "$target" = "unsupported" ] || [ -z "$target" ]; then
   exit 1
 fi
 
-if [ -z "$overwrite_config" ] && [ "$config_exists" = "1" ]; then
-  overwrite_config="$(prompt_yes_no "Remote config already exists. Overwrite it with a local config?" "n")"
-fi
-
-if [ "$config_exists" = "0" ] && [ -z "$overwrite_config" ]; then
+if [ "$config_exists" = "0" ]; then
   overwrite_config="1"
 fi
 
+config_mode="existing"
 if [ "$overwrite_config" = "1" ]; then
-  require_local_config
+  resolve_config_source
+  if [ -n "$generated_config_path" ]; then
+    config_mode="generated"
+  else
+    config_mode="uploaded"
+  fi
 fi
 
 bundle_url="$(bundle_url_for "$repo_slug" "$release_ref" "$target")"
 
 if ! curl -fsIL "$bundle_url" >/dev/null 2>&1; then
   echo "Release asset is not available: $bundle_url" >&2
-  echo "Push a tagged release first, for example: git tag v0.1.0 && git push origin main --tags" >&2
+  echo "Push a tagged release first, for example: git tag v0.1.1 && git push origin main --tags" >&2
   exit 1
 fi
 
@@ -266,7 +383,7 @@ ssh "${ssh_options[@]}" "$ssh_target" "
 "
 
 if [ "$overwrite_config" = "1" ]; then
-  echo "Uploading local config to $ssh_target:$remote_tmp/config.yaml"
+  echo "Uploading config to $ssh_target:$remote_tmp/config.yaml"
   upload_file "$local_config" "$remote_tmp/config.yaml"
 fi
 
@@ -319,5 +436,8 @@ ssh "${ssh_options[@]}" "$ssh_target" "
   echo 'bundle='\"$bundle_url\"
   \"\$remote_init\" status || true
 "
+
+panel_url="http://${host}:${panel_port}/"
+print_completion "$panel_url" "$panel_username" "$panel_password" "$config_mode"
 
 echo "Deployment complete"

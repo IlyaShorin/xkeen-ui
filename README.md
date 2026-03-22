@@ -107,20 +107,28 @@ There is also an interactive deploy helper:
 ./scripts/deploy-router.sh
 ```
 
+On macOS there is also a double-clickable launcher:
+
+```bash
+./scripts/deploy-router.command
+```
+
 It:
 
 - asks for router host and user
 - downloads the correct release bundle from GitHub Releases directly on the router
 - detects the router architecture
 - installs the binary and init script from the release bundle
-- optionally uploads a local config file
+- generates a panel config on first install if the router does not have one yet
+- optionally uploads a local config file when `--config` and `--overwrite-config` are used
 - backs up existing remote files before overwrite
 - restarts the service by default
+- prints the panel URL and opens it automatically on macOS/Linux desktops
 
 Useful options:
 
 ```bash
-./scripts/deploy-router.sh --repo IlyaShorin/xkeen-ui --tag latest
-./scripts/deploy-router.sh --repo IlyaShorin/xkeen-ui --tag v0.1.0
+./scripts/deploy-router.sh
+./scripts/deploy-router.sh --tag v0.1.0
 ./scripts/deploy-router.sh --config ./my-router-config.yaml --overwrite-config
 ```
